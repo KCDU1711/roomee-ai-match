@@ -4,6 +4,7 @@ import { getFirestore, collection, query, orderBy, onSnapshot, addDoc, serverTim
 // Voice AI: browser speech recognition and synthesis
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const Chat: React.FC = () => {
   // Pro user and payment modal state
@@ -226,49 +227,81 @@ const Chat: React.FC = () => {
         {messages.length === 0 ? (
           <div className="text-gray-500 text-center animate-fade-in">No messages yet.</div>
         ) : (
-          messages.map((msg, idx) => (
-            <div
+          <AnimatePresence>
+            {messages.map((msg, idx) => (
+              <motion.div
               key={idx}
               className={`flex items-end gap-2 ${msg.user === 'You' ? 'justify-end' : 'justify-start'} animate-bubble-in`}
-            >
+              initial={{ opacity: 0, y: 20, scale: 0.8 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.8 }}
+              transition={{ duration: 0.3, delay: idx * 0.1 }}
+              >
               {msg.user !== 'You' && (
-                <div className="w-8 h-8 rounded-full bg-pink-300 dark:bg-pink-700 flex items-center justify-center text-white font-bold shadow animate-avatar-in">
+                <motion.div 
+                  className="w-8 h-8 rounded-full bg-pink-300 dark:bg-pink-700 flex items-center justify-center text-white font-bold shadow"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.2 }}
+                >
                   {msg.user[0]}
-                </div>
+                </motion.div>
               )}
-              <div className={`px-4 py-2 rounded-2xl shadow text-base font-medium ${msg.user === 'You' ? 'bg-pink-500 text-white animate-bubble-right' : 'bg-white dark:bg-pink-800 text-pink-700 dark:text-pink-100 animate-bubble-left'}`}
+              <motion.div 
+                className={`px-4 py-2 rounded-2xl shadow text-base font-medium ${msg.user === 'You' ? 'bg-pink-500 text-white' : 'bg-white dark:bg-pink-800 text-pink-700 dark:text-pink-100'}`}
                 style={{ transition: 'all 0.3s', position: 'relative' }}>
+                whileHover={{ scale: 1.02 }}
+              >
                 {msg.text}
                 <span className="block text-xs text-gray-400 mt-1">{new Date(msg.timestamp).toLocaleTimeString()}</span>
                 {/* Voice playback button */}
-                <button
+                <motion.button
                   type="button"
                   className="absolute top-1 right-1 bg-pink-200 dark:bg-pink-700 rounded-full p-1 text-xs text-pink-700 dark:text-pink-100 shadow hover:bg-pink-300 hover:scale-110 transition"
                   title="Play message"
                   onClick={() => handleSpeak(msg.text)}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
                 >🔊</button>
-              </div>
+              </motion.div>
               {msg.user === 'You' && (
-                <div className="w-8 h-8 rounded-full bg-pink-500 flex items-center justify-center text-white font-bold shadow animate-avatar-in">
+                <motion.div 
+                  className="w-8 h-8 rounded-full bg-pink-500 flex items-center justify-center text-white font-bold shadow"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.2 }}
+                >
                   {msg.user[0]}
-                </div>
+                </motion.div>
               )}
-            </div>
-          ))
+              </motion.div>
+            ))}
+          </AnimatePresence>
         )}
         {/* Typing indicator animation */}
         {isTyping && (
-          <div className="flex items-center gap-2 animate-fade-in">
+          <motion.div 
+            className="flex items-center gap-2"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+          >
             <div className="w-8 h-8 rounded-full bg-pink-300 dark:bg-pink-700 flex items-center justify-center text-white font-bold shadow animate-avatar-in">...</div>
             <div className="px-4 py-2 rounded-2xl shadow bg-white dark:bg-pink-800 text-pink-700 dark:text-pink-100 animate-bubble-left">
               <span className="dot-typing">
                 <span>.</span><span>.</span><span>.</span>
               </span>
             </div>
-          </div>
+          </motion.div>
         )}
       </div>
-      <form onSubmit={handleSend} className="flex gap-2 z-10 relative animate-fade-in">
+      <motion.form 
+        onSubmit={handleSend} 
+        className="flex gap-2 z-10 relative"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+      >
         <input
           type="text"
           className="flex-1 p-3 border-2 border-pink-300 rounded-xl bg-pink-50 dark:bg-pink-950 text-pink-700 dark:text-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-400"
@@ -281,24 +314,28 @@ const Chat: React.FC = () => {
           required
         />
         {/* Voice AI microphone button */}
-        <button
+        <motion.button
           type="button"
           className={`bg-pink-400 text-white px-3 py-2 rounded-full shadow-lg transition-all duration-200 relative overflow-hidden ${isRecording ? 'animate-send' : 'hover:bg-pink-500 hover:scale-110'}`}
           style={{ minWidth: 44 }}
           onClick={isRecording ? handleVoiceStop : handleVoiceStart}
           title={isRecording ? 'Stop recording' : 'Speak'}
           disabled={loading}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
         >
           {isRecording ? <span className="animate-send-icon">🎤...</span> : <span>🎤</span>}
-        </button>
-        <button
+        </motion.button>
+        <motion.button
           type="submit"
           className={`bg-pink-600 text-white px-6 py-2 rounded-xl font-bold shadow-lg transition-all duration-200 relative overflow-hidden ${loading ? 'animate-send' : 'hover:bg-pink-700 dark:bg-pink-800 dark:hover:bg-pink-900 hover:scale-105'}`}
           disabled={loading}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
         >
           <span className="inline-block animate-send-icon">{loading ? '...' : 'Send'}</span>
-        </button>
-      </form>
+        </motion.button>
+      </motion.form>
       {error && <div className="mt-4 text-red-600 dark:text-red-400 text-center animate-fade-in">{error}</div>}
       {voiceError && <div className="mt-2 text-red-500 text-center animate-fade-in">{voiceError}</div>}
       {/* More chat animations */}

@@ -14,6 +14,7 @@ import RoomDocumentation from "./pages/RoomDocumentation";
 import Quiz from "./pages/Quiz";
 import Chat from "./pages/Chat";
 import { ThemeProvider } from "@/components/theme-provider";
+import AdminDashboard from "./pages/AdminDashboard";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +35,7 @@ const App = () => (
             <Route path="/room-documentation" element={<RoomDocumentation />} />
             <Route path="/quiz" element={<Quiz />} />
             <Route path="/chat/:matchId" element={<Chat />} />
+            <Route path="/admin" element={<AdminDashboard />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

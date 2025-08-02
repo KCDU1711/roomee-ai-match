@@ -10,6 +10,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Mic, MicOff, ArrowRight, Bot, MessageCircle } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
+import { motion, AnimatePresence } from "framer-motion";
+import { SurveyProgress } from "@/components/ui/survey-progress";
 
 const Survey = () => {
   const [user, loading] = useAuthState(auth);
@@ -187,39 +189,56 @@ const Survey = () => {
           </p>
           
           {/* Progress Bar */}
-          <div className="w-full max-w-md mx-auto mt-4">
-            <div className="h-2 bg-white/30 rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-gradient-to-r from-primary to-primary-glow transition-all duration-500"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">
-              Question {currentQuestion + 1} of {questions.length}
-            </p>
-          </div>
+          <SurveyProgress 
+            currentStep={currentQuestion + 1}
+            totalSteps={questions.length}
+            completedSteps={answers.map((_, i) => i + 1).filter((_, i) => i < currentQuestion)}
+          />
         </div>
 
         {/* Question Card */}
-        <Card className="brutal-card max-w-2xl mx-auto p-8">
-          <div className="text-center mb-8">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentQuestion}
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -50 }}
+            transition={{ duration: 0.3 }}
+          >
+            <Card className="brutal-card max-w-2xl mx-auto p-8">
+              <div className="text-center mb-8">
             <Badge className="bg-primary/10 text-primary border-primary/20 mb-4">
               Question {currentQuestion + 1}
             </Badge>
-            <h2 className="text-xl font-display font-bold text-foreground mb-4">
+                <motion.h2 
+                  className="text-xl font-display font-bold text-foreground mb-4"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                >
               {questions[currentQuestion].question}
-            </h2>
-          </div>
+                </motion.h2>
+              </div>
 
           {/* Answer Options */}
-          <RadioGroup 
+              <RadioGroup 
             value={answers[currentQuestion] || ""} 
             onValueChange={handleAnswer}
             className="space-y-3"
-          >
+              >
             {questions[currentQuestion].options.map((option, index) => (
-              <div key={index} className="relative">
-                <div className="flex items-center space-x-3 p-4 rounded-[16px] border-2 border-transparent hover:border-primary/30 hover:bg-primary/5 transition-all cursor-pointer">
+                <motion.div 
+                  key={index} 
+                  className="relative"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 + index * 0.1 }}
+                >
+                  <motion.div 
+                    className="flex items-center space-x-3 p-4 rounded-[16px] border-2 border-transparent hover:border-primary/30 hover:bg-primary/5 transition-all cursor-pointer"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
                   <RadioGroupItem value={option.value} id={`option-${index}`} />
                   <Label 
                     htmlFor={`option-${index}`} 
@@ -227,13 +246,19 @@ const Survey = () => {
                   >
                     {option.label}
                   </Label>
-                </div>
+                  </motion.div>
+                </motion.div>
               </div>
             ))}
-          </RadioGroup>
+              </RadioGroup>
 
           {/* Navigation */}
-          <div className="flex justify-between items-center mt-8">
+              <motion.div 
+                className="flex justify-between items-center mt-8"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+              >
             <Button 
               variant="outline"
               onClick={() => currentQuestion > 0 && setCurrentQuestion(currentQuestion - 1)}
@@ -271,8 +296,10 @@ const Survey = () => {
                 <ArrowRight className="w-4 h-4" />
               </Button>
             )}
-          </div>
-        </Card>
+              </motion.div>
+            </Card>
+          </motion.div>
+        </AnimatePresence>
       </div>
     </div>
   );

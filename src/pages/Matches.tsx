@@ -10,6 +10,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Heart, MessageCircle, Star, MapPin, Briefcase, Calendar, Home, Users, Shield, CheckCircle } from "lucide-react";
 import twinRoomImage from "@/assets/twin-room-mockup.jpg";
 import { toast } from "@/components/ui/sonner";
+import { motion } from "framer-motion";
+import { MatchScoreReveal } from "@/components/ui/match-score-reveal";
+import { FloatingHearts } from "@/components/ui/floating-hearts";
+import { ProfileCard } from "@/components/ui/profile-card";
 
 interface MatchWithProfile extends MatchingResult {
   profile?: UserProfile;
@@ -20,6 +24,8 @@ const Matches = () => {
   const [matches, setMatches] = useState<MatchWithProfile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [noMatches, setNoMatches] = useState(false);
+  const [showHearts, setShowHearts] = useState(false);
+  const [scoreRevealed, setScoreRevealed] = useState(false);
   const navigate = useNavigate();
 
   // Always call hooks at the top level, use effect for redirect
@@ -50,6 +56,11 @@ const Matches = () => {
           
           setMatches(matchesWithProfiles);
           toast.success(`Found ${matchResults.length} perfect match${matchResults.length > 1 ? 'es' : ''}!`);
+          
+          // Trigger celebration effects
+          setTimeout(() => {
+            setShowHearts(true);
+          }, 1000);
         }
       } catch (error) {
         console.error('Match finding failed:', error);
@@ -117,11 +128,11 @@ const Matches = () => {
   const topMatch = matches[0];
   const otherMatches = matches.slice(1);
   
-  const circumference = 2 * Math.PI * 45;
-  const offset = circumference - (topMatch.compatibility_score / 100) * circumference;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-soft via-background to-primary-glow relative overflow-hidden">
+      <FloatingHearts trigger={showHearts} count={12} />
+      
       {/* Floating decorations */}
       <div className="floating-particles top-16 right-10">🎉</div>
       <div className="floating-particles top-32 left-20 animation-delay-1000">✨</div>
@@ -129,58 +140,51 @@ const Matches = () => {
 
       <div className="container mx-auto px-4 py-8 relative z-10">
         {/* Header */}
-        <div className="text-center mb-8">
+        <motion.div 
+          className="text-center mb-8"
+          initial={{ opacity: 0, y: -30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+        >
           <div className="inline-flex items-center gap-2 bg-white/50 rounded-full px-4 py-2 mb-4">
             <Star className="w-5 h-5 text-primary" />
             <span className="text-sm font-semibold text-foreground">Matches Found</span>
           </div>
-          <h1 className="text-3xl font-display font-bold text-foreground mb-2">
+          <motion.h1 
+            className="text-3xl font-display font-bold text-foreground mb-2"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
             Your Perfect Matches! 
-          </h1>
+          </motion.h1>
           <p className="text-muted-foreground">
             Our AI found your perfect roommate match{matches.length > 1 ? 'es' : ''}!
           </p>
-        </div>
+        </motion.div>
 
         <div className="grid lg:grid-cols-2 gap-8 max-w-4xl mx-auto">
           {/* Top Match Details */}
-          <Card className="brutal-card p-8">
+          <motion.div
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+          >
+            <Card className="brutal-card p-8">
             <div className="text-center mb-6">
-              {/* Progress Ring */}
-              <div className="relative w-32 h-32 mx-auto mb-4">
-                <svg className="progress-ring w-32 h-32">
-                  <circle
-                    cx="64"
-                    cy="64"
-                    r="45"
-                    stroke="hsl(var(--primary) / 0.2)"
-                    strokeWidth="8"
-                    fill="transparent"
-                  />
-                  <circle
-                    cx="64"
-                    cy="64"
-                    r="45"
-                    stroke="hsl(var(--primary))"
-                    strokeWidth="8"
-                    fill="transparent"
-                    strokeDasharray={circumference}
-                    strokeDashoffset={offset}
-                    className="progress-ring-fill"
-                  />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-center">
-                    <div className={`text-2xl font-bold ${getMatchColor(topMatch.compatibility_score)}`}>
-                      {topMatch.compatibility_score}%
-                    </div>
-                    <div className="text-xs text-muted-foreground">Match</div>
-                  </div>
-                </div>
-                <div className="sparkle absolute -top-2 -right-2"></div>
-              </div>
+              {/* Match Score Reveal */}
+              <MatchScoreReveal 
+                score={topMatch.compatibility_score}
+                onComplete={() => setScoreRevealed(true)}
+                className="mb-4"
+              />
 
-              <Avatar className="w-20 h-20 mx-auto mb-4 border-4 border-primary/20">
+              <motion.div
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 1, duration: 0.5 }}
+              >
+                <Avatar className="w-20 h-20 mx-auto mb-4 border-4 border-primary/20">
                 <AvatarImage 
                   src={topMatch.profile?.profile_photo_url || "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face"} 
                   alt={topMatch.profile?.full_name || "Roommate"} 
@@ -189,6 +193,7 @@ const Matches = () => {
                   {topMatch.profile?.full_name?.split(' ').map(n => n[0]).join('') || 'RM'}
                 </AvatarFallback>
               </Avatar>
+              </motion.div>
 
               <h2 className="text-2xl font-display font-bold text-foreground">
                 {topMatch.profile?.full_name || 'Roommate'}
@@ -229,7 +234,12 @@ const Matches = () => {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex gap-3 mt-8">
+            <motion.div 
+              className="flex gap-3 mt-8"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.5, duration: 0.5 }}
+            >
               <Button
                 className="btn-primary flex-1 flex items-center justify-center gap-2"
                 onClick={() => navigate(`/chat/${topMatch.matched_user_id}`)}
@@ -240,11 +250,17 @@ const Matches = () => {
               <Button variant="outline" className="border-2 border-primary/20 rounded-[12px] px-6">
                 <Star className="w-4 h-4" />
               </Button>
-            </div>
+            </motion.div>
           </Card>
+          </motion.div>
 
           {/* Room Preview & Other Matches */}
-          <div className="space-y-6">
+          <motion.div 
+            className="space-y-6"
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, delay: 0.5 }}
+          >
             {/* Room Mockup */}
             <Card className="glass-card p-6">
               <div className="flex items-center gap-2 mb-4">
@@ -301,7 +317,7 @@ const Matches = () => {
                 </div>
               </Card>
             )}
-
+          </motion.div>
             {/* Security Features */}
             <Card className="glass-card p-6">
               <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">

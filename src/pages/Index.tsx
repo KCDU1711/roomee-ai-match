@@ -6,6 +6,8 @@ import heroImage from "@/assets/hero-roommates.jpg";
 import twinRoomImage from "@/assets/twin-room-mockup.jpg";
 import { useTheme } from "@/components/theme-provider";
 import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { AnimatedCounter } from "@/components/ui/animated-counter";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -21,6 +23,8 @@ const Index = () => {
 
   // Live match counter (demo)
   const [matchCount, setMatchCount] = useState(1200);
+  const [showFloatingHearts, setShowFloatingHearts] = useState(false);
+
   // Add floating particles effect
   useEffect(() => {
     const particles = document.querySelectorAll('.floating-particle');
@@ -39,6 +43,14 @@ const Index = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Trigger floating hearts periodically
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setShowFloatingHearts(true);
+      setTimeout(() => setShowFloatingHearts(false), 100);
+    }, 10000);
+    return () => clearInterval(interval);
+  }, []);
   return (
     <div className={`min-h-screen transition-colors duration-300 ${theme === 'dark' 
       ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900' 
@@ -111,11 +123,20 @@ const Index = () => {
           {/* Live Match Counter */}
           <div className="flex justify-center items-center gap-2 mb-8 animate-fade-in">
             <Star className="w-6 h-6 text-yellow-400 animate-bounce" />
-            <span className="text-2xl font-bold text-pink-600 dark:text-purple-300">{matchCount.toLocaleString()}</span>
+            <AnimatedCounter 
+              from={1000} 
+              to={matchCount} 
+              className="text-2xl font-bold text-pink-600 dark:text-purple-300"
+            />
             <span className="text-lg text-gray-500 dark:text-gray-300">matches made so far!</span>
           </div>
           {/* Featured Roommates Carousel */}
-          <div className="mb-12 max-w-2xl mx-auto">
+          <motion.div 
+            className="mb-12 max-w-2xl mx-auto"
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.5 }}
+          >
             <div className="flex gap-4 overflow-x-auto pb-2 hide-scrollbar">
               {[{
                 name: "Priya K.",
@@ -130,16 +151,33 @@ const Index = () => {
                 bio: "Artist, bookworm, neat freak",
                 img: heroImage
               }].map((roommate, idx) => (
-                <div key={idx} className="min-w-[180px] bg-white dark:bg-pink-900 rounded-2xl shadow-lg p-4 flex flex-col items-center animate-fade-in">
-                  <img src={roommate.img} alt={roommate.name} className="w-16 h-16 rounded-full object-cover mb-2 border-4 border-pink-300 dark:border-purple-400" />
+                <motion.div 
+                  key={idx} 
+                  className="min-w-[180px] bg-white dark:bg-pink-900 rounded-2xl shadow-lg p-4 flex flex-col items-center"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.5, delay: idx * 0.2 }}
+                  whileHover={{ scale: 1.05, y: -5 }}
+                >
+                  <motion.img 
+                    src={roommate.img} 
+                    alt={roommate.name} 
+                    className="w-16 h-16 rounded-full object-cover mb-2 border-4 border-pink-300 dark:border-purple-400"
+                    whileHover={{ rotate: 5 }}
+                  />
                   <div className="font-bold text-pink-600 dark:text-purple-200">{roommate.name}</div>
                   <div className="text-sm text-gray-500 dark:text-gray-300">{roommate.bio}</div>
-                </div>
+                </motion.div>
               ))}
             </div>
-          </div>
+          </motion.div>
         {/* Why Choose Us Section */}
-        <div className="mb-16 max-w-4xl mx-auto animate-fade-in">
+        <motion.div 
+          className="mb-16 max-w-4xl mx-auto"
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.7 }}
+        >
           <h2 className={`text-2xl font-bold text-center mb-8 ${theme === 'dark' ? 'text-white' : 'text-pink-700'}`}>Why Choose Roomee?</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[{
@@ -155,14 +193,21 @@ const Index = () => {
               title: "Instant Matching",
               desc: "Get matches instantly with our smart AI."
             }].map((item, idx) => (
-              <div key={idx} className="bg-white dark:bg-pink-900 rounded-2xl shadow-lg p-6 text-center animate-fade-in">
+              <motion.div 
+                key={idx} 
+                className="bg-white dark:bg-pink-900 rounded-2xl shadow-lg p-6 text-center"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.8 + idx * 0.1 }}
+                whileHover={{ scale: 1.05, y: -10 }}
+              >
                 <div className="mb-4">{item.icon}</div>
                 <div className="font-bold text-lg mb-2">{item.title}</div>
                 <div className="text-gray-500 dark:text-gray-300 text-sm">{item.desc}</div>
-              </div>
+              </motion.div>
             ))}
           </div>
-        </div>
+        </motion.div>
         {/* Newsletter Signup */}
         <div className="max-w-xl mx-auto mb-16 text-center animate-fade-in">
           <h2 className="text-xl font-bold mb-2 text-pink-600 dark:text-purple-200">Stay Updated!</h2>
@@ -174,26 +219,39 @@ const Index = () => {
         </div>
 
           {/* Hero Image */}
-          <div className={`${theme === 'dark' ? 'bg-gray-800/30' : 'bg-white/30'} backdrop-blur-md rounded-[32px] p-6 max-w-2xl mx-auto mb-12 shadow-xl`}>
-            <img 
+          <motion.div 
+            className={`${theme === 'dark' ? 'bg-gray-800/30' : 'bg-white/30'} backdrop-blur-md rounded-[32px] p-6 max-w-2xl mx-auto mb-12 shadow-xl`}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+          >
+            <motion.img 
               src={heroImage} 
               alt="Happy roommates celebrating perfect match" 
               className="w-full h-80 object-cover rounded-[24px] shadow-lg"
+              whileHover={{ scale: 1.02 }}
+              transition={{ duration: 0.3 }}
             />
-          </div>
+          </motion.div>
 
-          <Button 
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.6 }}
+          >
+            <Button 
             onClick={handleGetStarted}
             className={`text-lg px-12 py-6 flex items-center gap-3 mx-auto transition-all hover:scale-105 ${
               theme === 'dark' 
                 ? 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700' 
                 : 'btn-primary'
             }`}
-          >
+            >
             <Sparkles className="w-5 h-5" />
             Get Started Now
             <ArrowRight className="w-5 h-5" />
-          </Button>
+            </Button>
+          </motion.div>
         </div>
 
         {/* Features Section */}
